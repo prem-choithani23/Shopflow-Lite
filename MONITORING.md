@@ -5,7 +5,9 @@
 I've created **4 awesome Grafana dashboards** for your Shopflow-Lite project:
 
 ### 1. **Kubernetes Cluster Overview** 🎯
+
 Monitors the health of your entire Kubernetes cluster:
+
 - Pod CPU usage trends
 - Pod Memory usage
 - Total pods running
@@ -18,7 +20,9 @@ Monitors the health of your entire Kubernetes cluster:
 ---
 
 ### 2. **Shopflow Application Performance** 🚀
+
 Real-time application monitoring:
+
 - HTTP Request rate (req/sec)
 - Response time (p95 percentile)
 - Error rate (5xx errors)
@@ -31,7 +35,9 @@ Real-time application monitoring:
 ---
 
 ### 3. **Jenkins CI/CD Pipeline** 🔄
+
 CI/CD pipeline analytics:
+
 - Build success/failure rate
 - Pipeline execution time
 - Successful deployments (last 24h)
@@ -44,7 +50,9 @@ CI/CD pipeline analytics:
 ---
 
 ### 4. **Infrastructure Monitoring** 💻
+
 Node and system-level metrics:
+
 - Node CPU usage
 - Node Memory usage
 - Disk I/O performance
@@ -60,6 +68,7 @@ Node and system-level metrics:
 ## 🚀 How to Access Dashboards
 
 ### Get Grafana URL
+
 ```bash
 minikube service grafana-service -n monitoring --url
 # or
@@ -67,12 +76,14 @@ echo "Grafana: http://$(minikube ip):30300"
 ```
 
 ### Login Credentials
+
 - **Username**: `admin`
 - **Password**: `admin123`
 
 ### Import Dashboards
 
 **Option 1: Automatic (Manual in UI)**
+
 1. Open Grafana: `http://$(minikube ip):30300`
 2. Go to **Dashboards** → **Import**
 3. Select **Upload JSON file**
@@ -81,12 +92,14 @@ echo "Grafana: http://$(minikube ip):30300"
 6. Click **Import**
 
 **Option 2: Copy Dashboard JSON**
+
 1. In Grafana, click **+** → **Dashboard**
 2. Click **Dashboard settings** → **JSON Model**
 3. Copy JSON from the corresponding file in `k8s/grafana-dashboards/`
 4. Paste and save
 
 **Option 3: Programmatic (Curl)**
+
 ```bash
 # Create data source
 curl -X POST "http://localhost:3000/api/datasources" \
@@ -132,6 +145,7 @@ k8s/
 ## 🔧 Next Steps
 
 ### 1. Configure Data Source (First Time)
+
 ```bash
 # Port-forward Grafana
 kubectl port-forward -n monitoring svc/grafana-service 3000:3000 &
@@ -143,16 +157,19 @@ kubectl port-forward -n monitoring svc/grafana-service 3000:3000 &
 ```
 
 ### 2. Import Dashboards
+
 - Upload JSON files from `k8s/grafana-dashboards/`
 - Select Prometheus data source
 - Customize as needed
 
 ### 3. Set Up Alerts (Optional)
+
 - Click dashboard panel → **Alert**
 - Configure thresholds
 - Set notification channels
 
 ### 4. Create Custom Dashboards
+
 - Mix and match panels from existing dashboards
 - Use Prometheus queries for custom metrics
 
@@ -161,6 +178,7 @@ kubectl port-forward -n monitoring svc/grafana-service 3000:3000 &
 ## 📈 Recommended Alerts
 
 ### Critical
+
 - ❌ Error rate > 5%
 - ❌ Response time (p95) > 1000ms
 - ❌ Pod restarts in 5min
@@ -168,12 +186,14 @@ kubectl port-forward -n monitoring svc/grafana-service 3000:3000 &
 - ❌ Node Memory > 90%
 
 ### Warning
+
 - ⚠️ Error rate > 1%
 - ⚠️ Response time (p95) > 500ms
 - ⚠️ Build success rate < 90%
 - ⚠️ Node CPU > 70%
 
 ### Info
+
 - ℹ️ New deployment started
 - ℹ️ Pod replica count changed
 - ℹ️ High request rate detected
@@ -202,21 +222,25 @@ curl -X PUT "http://localhost:3000/api/user/password" \
 ### Query Examples
 
 **CPU Usage**
+
 ```promql
 rate(node_cpu_seconds_total[5m]) * 100
 ```
 
 **Memory Usage**
+
 ```promql
 (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
 ```
 
 **Request Rate**
+
 ```promql
 rate(http_requests_total[1m])
 ```
 
 **Error Rate**
+
 ```promql
 rate(http_requests_total{status=~"5.."}[1m])
 ```
@@ -226,12 +250,14 @@ rate(http_requests_total{status=~"5.."}[1m])
 ## 🆘 Troubleshooting
 
 ### Dashboards Show "No Data"
+
 1. ✅ Check Prometheus is running: `kubectl get pods -n monitoring`
 2. ✅ Verify data source URL is correct
 3. ✅ Check metrics exist: `http://prometheus:9090`
 4. ✅ Wait 5 minutes for data collection
 
 ### Can't Access Grafana
+
 ```bash
 # Check service
 kubectl get svc -n monitoring
@@ -244,6 +270,7 @@ kubectl port-forward -n monitoring svc/grafana-service 3000:3000
 ```
 
 ### Wrong Credentials
+
 - Reset: Go to Grafana → Admin → Users
 - Default: `admin` / `admin123`
 
@@ -262,6 +289,7 @@ kubectl port-forward -n monitoring svc/grafana-service 3000:3000
 Your monitoring stack is ready with **Prometheus**, **Grafana**, and **4 pre-configured dashboards**!
 
 **Start monitoring**:
+
 ```bash
 # Port-forward Grafana
 kubectl port-forward -n monitoring svc/grafana-service 3000:3000 &

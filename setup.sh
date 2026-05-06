@@ -12,7 +12,7 @@ echo ""
 
 # Step 1: Verify prerequisites
 echo "✓ Checking prerequisites..."
-for cmd in docker minikube kubectl git; do
+for cmd in docker minikube kubectl git curl jq; do
     if ! command -v $cmd &> /dev/null; then
         echo "❌ $cmd is not installed"
         exit 1
@@ -41,13 +41,13 @@ echo ""
 # Step 4: Build Docker image
 echo "🐳 Building Shopflow Docker image..."
 cd "$(dirname "$0")"
-docker build -t shopflow:latest .
+docker build -t shopflow:latest -t shopflow:metrics .
 echo "✅ Docker image built"
 echo ""
 
 # Step 5: Load image into Minikube
 echo "📤 Loading image into Minikube..."
-minikube image load shopflow:latest
+minikube image load shopflow:metrics
 echo "✅ Image loaded into Minikube"
 echo ""
 
@@ -93,14 +93,42 @@ docker exec shopflow-jenkins sed -i 's|'$HOME'/.minikube|/var/jenkins_home/.mini
 echo "✅ Jenkins kubeconfig configured"
 echo ""
 
-# Step 10: Wait for pods to be ready
+# Step 10: Deploy monitoring stack
+echo "📊 Deploying monitoring stack..."
+kubectl apply -f k8s/monitoring-namespace.yaml
+kubectl apply -f k8s/prometheus-rbac.yaml
+kubectl apply -f k8s/prometheus-config.yaml
+kubectl apply -f k8s/prometheus-deployment.yaml
+kubectl apply -f k8s/prometheus-service.yaml
+kubectl apply -f k8s/node-exporter.yaml
+kubectl apply -f k8s/kube-state-metrics.yaml
+kubectl apply -f k8s/grafana-deployment.yaml
+kubectl apply -f k8s/grafana-service.yaml
+kubectl rollout restart deployment/prometheus-server -n monitoring > /dev/null 2>&1 || true
+echo "✅ Monitoring manifests applied"
+echo ""
+
+# Step 11: Wait for pods to be ready
 echo "⏳ Waiting for Shopflow pods to be ready..."
 sleep 10
 kubectl wait --for=condition=ready pod -l app=shopflow --timeout=120s 2>/dev/null || true
 echo "✅ Pods are ready"
 echo ""
 
-# Step 11: Display summary
+echo "⏳ Waiting for monitoring pods to be ready..."
+kubectl rollout status deployment/prometheus-server -n monitoring --timeout=120s
+kubectl rollout status deployment/grafana -n monitoring --timeout=120s
+kubectl rollout status deployment/kube-state-metrics -n monitoring --timeout=120s
+kubectl rollout status daemonset/node-exporter -n monitoring --timeout=120s
+echo "✅ Monitoring pods are ready"
+echo ""
+
+# Step 12: Provision Grafana
+echo "📈 Provisioning Grafana data source and dashboards..."
+bash k8s/create-dashboards.sh
+echo ""
+
+# Step 13: Display summary
 echo "================================================"
 echo "  ✅ SETUP COMPLETED SUCCESSFULLY!"
 echo "================================================"
@@ -112,6 +140,14 @@ echo "     $(minikube service shopflow-service --url)"
 echo ""
 echo "  🔨 Jenkins CI/CD:"
 echo "     http://localhost:8080"
+echo ""
+MINIKUBE_IP=$(minikube ip)
+echo "  📊 Prometheus Metrics:"
+echo "     http://${MINIKUBE_IP}:30090"
+echo ""
+echo "  📈 Grafana Dashboards:"
+echo "     http://${MINIKUBE_IP}:30300"
+echo "     (Default: admin / admin123)"
 echo ""
 echo "  📊 Kubernetes Dashboard:"
 echo "     minikube dashboard"

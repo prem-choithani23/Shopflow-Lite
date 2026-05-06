@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
-from flask import Flask, render_template, redirect, session
+from flask import Flask, Response, g, redirect, render_template, request, session
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from supabase import create_client
 import os
+import time
 import uuid
 from dotenv import load_dotenv
 
@@ -16,6 +18,35 @@ key = os.getenv("SUPABASE_KEY")
 supabase = create_client(url, key)
 
 MAX_ORDER_HISTORY = 25
+
+HTTP_REQUESTS = Counter(
+    "http_requests",
+    "Total HTTP requests served by Shopflow.",
+    ["method", "endpoint", "status"],
+)
+HTTP_REQUEST_DURATION = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request duration in seconds.",
+    ["method", "endpoint", "status"],
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
+)
+
+
+@app.before_request
+def start_metrics_timer():
+    g.metrics_start = time.perf_counter()
+
+
+@app.after_request
+def record_request_metrics(response):
+    endpoint = request.endpoint or request.path
+    status = str(response.status_code)
+    duration = time.perf_counter() - g.get("metrics_start", time.perf_counter())
+
+    HTTP_REQUESTS.labels(request.method, endpoint, status).inc()
+    HTTP_REQUEST_DURATION.labels(request.method, endpoint, status).observe(duration)
+
+    return response
 
 
 def _cart_line_items(cart):
@@ -157,6 +188,11 @@ def order_history():
 @app.route('/health')
 def health():
     return {"status": "running"}
+
+
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
 
 if __name__ == '__main__':

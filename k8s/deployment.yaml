@@ -11,10 +11,14 @@ spec:
     metadata:
       labels:
         app: shopflow
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "5000"
     spec:
       containers:
       - name: shopflow
-        image: shopflow:latest
+        image: shopflow:metrics
         imagePullPolicy: Never
         ports:
         - containerPort: 5000
