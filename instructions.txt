@@ -1,0 +1,52 @@
+# 1. STARTUP SEQUENCE (Core Infrastructure)
+# Start Docker service
+
+sudo service docker start
+
+# Start Jenkins Container
+docker start shopflow-jenkins
+
+# Start Minikube using your alias (Ensure the bridge 172.17.0.1 is ready)
+mk-start
+
+
+# 2. PRE-DEMO CLEANUP (Show a "Blank Canvas")
+
+# Verify cluster is healthy but empty
+kubectl get nodes
+kubectl get pods
+
+
+# 4. MONITORING & ACCESS (Open in New Tabs)
+
+# A. Get Grafana Admin Password
+kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+# B. Port-Forward Grafana (Run in separate terminal)
+# Access at http://localhost:3000
+kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 --address 0.0.0.0
+
+# C. Port-Forward Prometheus (Run in separate terminal)
+# Access at http://localhost:9090
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090 --address 0.0.0.0
+
+# D. Get Application URL
+minikube service shopflow-service --url
+
+
+# Show Jenkins-deployed pods
+kubectl get pods
+
+# Show scaling (Scale to 3 replicas)
+kubectl scale deployment shopflow --replicas=3
+kubectl get pods
+
+
+# 6. SHUTDOWN SEQUENCE (Clean Up)
+
+# Stop the Minikube cluster
+minikube stop
+
+# Stop the Jenkins container
+docker stop shopflow-jenkins
+
