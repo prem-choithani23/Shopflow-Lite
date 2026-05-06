@@ -35,6 +35,7 @@ sudo service docker start
 ```
 
 Verify Docker is running:
+
 ```bash
 docker --version
 docker ps
@@ -47,6 +48,7 @@ docker start shopflow-jenkins
 ```
 
 If the container doesn't exist, create it:
+
 ```bash
 docker run -d \
   --name shopflow-jenkins \
@@ -65,6 +67,7 @@ minikube start
 ```
 
 Verify Minikube is running:
+
 ```bash
 minikube status
 kubectl cluster-info
@@ -88,6 +91,7 @@ minikube image load shopflow:latest
 ```
 
 Verify image is loaded:
+
 ```bash
 minikube image ls | grep shopflow
 ```
@@ -101,6 +105,7 @@ kubectl apply -f k8s/secret.yaml
 ```
 
 Or manually:
+
 ```bash
 kubectl create secret generic shopflow-secret \
   --from-literal=SUPABASE_URL=https://jkfymuwtwvsallcrniuh.supabase.co \
@@ -115,12 +120,14 @@ kubectl apply -f k8s/service.yaml
 ```
 
 Verify deployment:
+
 ```bash
 kubectl get pods
 kubectl get svc
 ```
 
 Expected output:
+
 ```
 NAME                        READY   STATUS    RESTARTS
 shopflow-67f6556c7b-blhdf   1/1     Running   0
@@ -167,6 +174,7 @@ kubectl describe pod <pod-name>
 ### C. Port-Forward (Optional - for testing)
 
 Forward port 5000 to localhost:
+
 ```bash
 kubectl port-forward svc/shopflow-service 5000:80
 ```
@@ -176,12 +184,14 @@ Then access: `http://localhost:5000`
 ### D. Monitor Grafana (If monitoring stack is deployed)
 
 Get Grafana admin password:
+
 ```bash
 kubectl get secret --namespace monitoring prometheus-grafana \
   -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 ```
 
 Port-forward Grafana:
+
 ```bash
 kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 --address 0.0.0.0
 ```
@@ -328,18 +338,18 @@ docker rmi shopflow:latest
 
 ## 9. QUICK REFERENCE
 
-| Command | Purpose |
-|---------|---------|
-| `docker build -t shopflow:latest .` | Build Docker image |
-| `minikube image load shopflow:latest` | Load image into Minikube |
-| `kubectl apply -f k8s/*.yaml` | Deploy to Kubernetes |
-| `minikube service shopflow-service --url` | Get application URL |
-| `kubectl get pods -w` | Watch pod status |
-| `kubectl logs -f deployment/shopflow` | Stream logs |
-| `kubectl scale deployment shopflow --replicas=3` | Scale pods |
-| `minikube dashboard` | Open Minikube dashboard |
-| `docker ps` | View running containers |
-| `kubectl describe pod <name>` | Get pod details |
+| Command                                          | Purpose                  |
+| ------------------------------------------------ | ------------------------ |
+| `docker build -t shopflow:latest .`              | Build Docker image       |
+| `minikube image load shopflow:latest`            | Load image into Minikube |
+| `kubectl apply -f k8s/*.yaml`                    | Deploy to Kubernetes     |
+| `minikube service shopflow-service --url`        | Get application URL      |
+| `kubectl get pods -w`                            | Watch pod status         |
+| `kubectl logs -f deployment/shopflow`            | Stream logs              |
+| `kubectl scale deployment shopflow --replicas=3` | Scale pods               |
+| `minikube dashboard`                             | Open Minikube dashboard  |
+| `docker ps`                                      | View running containers  |
+| `kubectl describe pod <name>`                    | Get pod details          |
 
 ---
 
@@ -368,29 +378,30 @@ Shopflow-Lite/
 
 The application uses these environment variables (configured via Kubernetes Secrets):
 
-| Variable | Description |
-|----------|-------------|
-| `SUPABASE_URL` | Supabase database URL |
+| Variable       | Description             |
+| -------------- | ----------------------- |
+| `SUPABASE_URL` | Supabase database URL   |
 | `SUPABASE_KEY` | Supabase public API key |
 
 ---
 
 ## 12. PORTS OVERVIEW
 
-| Service | Port | URL |
-|---------|------|-----|
-| Flask App | 5000 | Internal (container) |
-| Kubernetes Service | 80 | Internal (cluster) |
-| NodePort | 30007 | External (Minikube) |
-| Jenkins | 8080 | http://localhost:8080 |
-| Grafana | 3000 | http://localhost:3000 |
-| Prometheus | 9090 | http://localhost:9090 |
+| Service            | Port  | URL                   |
+| ------------------ | ----- | --------------------- |
+| Flask App          | 5000  | Internal (container)  |
+| Kubernetes Service | 80    | Internal (cluster)    |
+| NodePort           | 30007 | External (Minikube)   |
+| Jenkins            | 8080  | http://localhost:8080 |
+| Grafana            | 3000  | http://localhost:3000 |
+| Prometheus         | 9090  | http://localhost:9090 |
 
 ---
 
 ## Support
 
 For issues or questions, refer to:
+
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [Minikube Documentation](https://minikube.sigs.k8s.io/)
 - [Jenkins Documentation](https://www.jenkins.io/doc/)
