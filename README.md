@@ -5,16 +5,19 @@ A modern e-commerce application built with Flask, containerized with Docker, and
 ## 🚀 Quick Start
 
 ### One-Time Setup
+
 ```bash
 bash setup.sh
 ```
 
 ### Every Time You Start
+
 ```bash
 bash startup.sh
 ```
 
 ### Access the Application
+
 - **Shopflow App**: Run `minikube service shopflow-service --url`
 - **Jenkins CI/CD**: `http://localhost:8080`
 - **Kubernetes Dashboard**: `minikube dashboard`
@@ -68,21 +71,25 @@ Shopflow-Lite/
 ## 📊 Monitoring
 
 ### View Logs
+
 ```bash
 kubectl logs -f deployment/shopflow
 ```
 
 ### Check Pod Status
+
 ```bash
 kubectl get pods
 ```
 
 ### Scale Replicas
+
 ```bash
 kubectl scale deployment shopflow --replicas=3
 ```
 
 ### Watch Deployments
+
 ```bash
 kubectl get pods -w
 ```
@@ -90,6 +97,7 @@ kubectl get pods -w
 ## 🔐 Environment Variables
 
 The app uses Supabase for the database. Credentials are stored in Kubernetes secrets:
+
 - `SUPABASE_URL`: Database URL
 - `SUPABASE_KEY`: API key
 
@@ -102,6 +110,7 @@ The app uses Supabase for the database. Credentials are stored in Kubernetes sec
 ## 🐛 Troubleshooting
 
 ### Jenkins Can't Deploy
+
 ```bash
 # Check kubeconfig
 docker exec shopflow-jenkins cat /var/jenkins_home/.kube/config | grep server
@@ -111,12 +120,14 @@ docker exec shopflow-jenkins kubectl get nodes
 ```
 
 ### Pods Not Running
+
 ```bash
 kubectl describe pod <pod-name>
 kubectl logs <pod-name>
 ```
 
 ### Docker Image Issues
+
 ```bash
 # Rebuild and reload
 docker build -t shopflow:latest .
@@ -133,7 +144,7 @@ kubectl rollout restart deployment/shopflow
 ✅ Easy local development with Minikube  
 ✅ Production-ready Docker image  
 ✅ Auto-scaling capabilities  
-✅ Comprehensive monitoring and logging  
+✅ Comprehensive monitoring and logging
 
 ## 📝 License
 

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  kubernetes-cluster.json: |
+    {{KUBERNETES_CLUSTER_DASHBOARD}}
+  shopflow-app.json: |
+    {{SHOPFLOW_APP_DASHBOARD}}
+  jenkins-ci-cd.json: |
+    {{JENKINS_CI_CD_DASHBOARD}}
+  infrastructure.json: |
+    {{INFRASTRUCTURE_DASHBOARD}}
