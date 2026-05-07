@@ -70,20 +70,28 @@ Deep dive into node and infrastructure metrics:
 
 ### Option 1: Automatic Import (Recommended)
 
-Run the setup script:
+Run the setup script for a first install:
 
 ```bash
 bash setup.sh
 ```
 
-This automatically creates all dashboards during initial setup.
+For every later run, use:
+
+```bash
+bash startup.sh
+```
+
+Both scripts warm Shopflow metrics, verify Grafana can query Prometheus, and re-import dashboards with the current Prometheus data source UID.
 
 ### Option 2: Manual Import via API
 
 ```bash
-# From the k8s directory
-./create-dashboards.sh
+bash k8s/warm-dashboard-metrics.sh
+bash k8s/create-dashboards.sh
 ```
+
+Use `GRAFANA_URL`, `PROMETHEUS_URL`, or `APP_URL` environment variables only when you intentionally want to override the Minikube defaults.
 
 ### Option 3: Manual Import via UI
 

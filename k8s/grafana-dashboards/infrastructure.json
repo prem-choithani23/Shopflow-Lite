@@ -508,7 +508,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "count(node_cpu_info)",
+                    "expr": "count(kube_node_info) or vector(0)",
                     "refId": "A"
                 }
             ],

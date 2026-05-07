@@ -123,12 +123,17 @@ kubectl rollout status daemonset/node-exporter -n monitoring --timeout=120s
 echo "✅ Monitoring pods are ready"
 echo ""
 
-# Step 12: Provision Grafana
+# Step 12: Warm Prometheus metrics for Grafana panels
+echo "🔥 Warming dashboard metrics..."
+bash k8s/warm-dashboard-metrics.sh
+echo ""
+
+# Step 13: Provision Grafana
 echo "📈 Provisioning Grafana data source and dashboards..."
 bash k8s/create-dashboards.sh
 echo ""
 
-# Step 13: Display summary
+# Step 14: Display summary
 echo "================================================"
 echo "  ✅ SETUP COMPLETED SUCCESSFULLY!"
 echo "================================================"

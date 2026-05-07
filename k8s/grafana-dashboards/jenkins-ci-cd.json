@@ -318,7 +318,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "count(kube_deployment_info{namespace='default'})",
+                    "expr": "count(kube_deployment_status_replicas{namespace=\"default\"}) or vector(0)",
                     "refId": "A"
                 }
             ],

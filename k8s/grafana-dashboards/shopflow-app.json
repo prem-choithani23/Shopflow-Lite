@@ -26,7 +26,7 @@
                         "mode": "palette-classic"
                     },
                     "custom": {
-                        "axisLabel": "CPU (cores)",
+                        "axisLabel": "Requests/sec",
                         "axisPlacement": "auto",
                         "barAlignment": 0,
                         "drawStyle": "line",
@@ -63,7 +63,7 @@
                             }
                         ]
                     },
-                    "unit": "short"
+                    "unit": "reqps"
                 },
                 "overrides": []
             },
@@ -95,7 +95,7 @@
                     "refId": "A"
                 },
                 {
-                    "expr": "sum(rate(http_requests_total{status=~\"5..\"}[1m]))",
+                    "expr": "sum(rate(http_requests_total{status=~\"5..\"}[1m])) or vector(0)",
                     "legendFormat": "5xx Errors",
                     "refId": "B"
                 }
@@ -156,7 +156,7 @@
                             }
                         ]
                     },
-                    "unit": "short"
+                    "unit": "ms"
                 },
                 "overrides": []
             },
@@ -272,13 +272,13 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum by (pod) (rate(container_network_transmit_bytes_total{pod=~\"shopflow.*\"}[1m])) / 1024 / 1024",
-                    "legendFormat": "TX {{pod}}",
+                    "expr": "sum(rate(container_network_transmit_bytes_total{id=\"/\"}[1m])) / 1024 / 1024",
+                    "legendFormat": "TX",
                     "refId": "A"
                 },
                 {
-                    "expr": "sum by (pod) (rate(container_network_receive_bytes_total{pod=~\"shopflow.*\"}[1m])) / 1024 / 1024",
-                    "legendFormat": "RX {{pod}}",
+                    "expr": "sum(rate(container_network_receive_bytes_total{id=\"/\"}[1m])) / 1024 / 1024",
+                    "legendFormat": "RX",
                     "refId": "B"
                 }
             ],
@@ -331,7 +331,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "count(kube_pod_labels{label_app='shopflow'})",
+                    "expr": "count(kube_pod_labels{label_app='shopflow'}) or vector(0)",
                     "refId": "A"
                 }
             ],
@@ -392,7 +392,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum(kube_pod_status_phase{pod=~\"shopflow.*\",phase=\"Running\"}) / count(kube_pod_labels{label_app='shopflow'}) * 100",
+                    "expr": "(sum(kube_pod_status_phase{pod=~\"shopflow.*\",phase=\"Running\"}) / count(kube_pod_labels{label_app='shopflow'}) * 100) or vector(0)",
                     "refId": "A"
                 }
             ],
@@ -453,7 +453,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum(increase(kube_pod_container_status_restarts_total{pod=~\"shopflow.*\"}[1h]))",
+                    "expr": "sum(increase(kube_pod_container_status_restarts_total{pod=~\"shopflow.*\"}[1h])) or vector(0)",
                     "refId": "A"
                 }
             ],
@@ -506,7 +506,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "max(container_memory_usage_bytes{pod=~\"shopflow.*\"}) / 1024 / 1024",
+                    "expr": "(max(container_memory_usage_bytes{pod=~\"shopflow.*\"}) / 1024 / 1024) or vector(0)",
                     "refId": "A"
                 }
             ],
