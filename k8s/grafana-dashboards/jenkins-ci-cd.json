@@ -26,120 +26,7 @@
                         "mode": "palette-classic"
                     },
                     "custom": {
-                        "axisLabel": "Builds",
-                        "axisPlacement": "auto",
-                        "barAlignment": 0,
-                        "drawStyle": "bars",
-                        "fillOpacity": 100,
-                        "gradientMode": "none",
-                        "hideFrom": {
-                            "tooltip": false,
-                            "viz": false,
-                            "legend": false
-                        },
-                        "lineInterpolation": "linear",
-                        "lineWidth": 1,
-                        "pointSize": 5,
-                        "scaleDistribution": {
-                            "type": "linear"
-                        },
-                        "showPoints": "never",
-                        "spanNulls": true,
-                        "stacking": {
-                            "group": "A",
-                            "mode": "normal"
-                        },
-                        "thresholdsStyle": {
-                            "mode": "off"
-                        }
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "short"
-                },
-                "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "Failed"
-                        },
-                        "properties": [
-                            {
-                                "id": "color",
-                                "value": {
-                                    "fixedColor": "red",
-                                    "mode": "fixed"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "Success"
-                        },
-                        "properties": [
-                            {
-                                "id": "color",
-                                "value": {
-                                    "fixedColor": "green",
-                                    "mode": "fixed"
-                                }
-                            }
-                        ]
-                    }
-                ]
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 0,
-                "y": 0
-            },
-            "id": 2,
-            "options": {
-                "legend": {
-                    "calcs": [],
-                    "displayMode": "list",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "single"
-                }
-            },
-            "pluginVersion": "8.0.0",
-            "targets": [
-                {
-                    "expr": "increase(jenkins_builds_success_build_count[1h])",
-                    "legendFormat": "Success",
-                    "refId": "A"
-                },
-                {
-                    "expr": "increase(jenkins_builds_failed_build_count[1h])",
-                    "legendFormat": "Failed",
-                    "refId": "B"
-                }
-            ],
-            "title": "Build Success/Failure Rate",
-            "type": "timeseries"
-        },
-        {
-            "datasource": "Prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "axisLabel": "Duration (seconds)",
+                        "axisLabel": "Pod Ready %",
                         "axisPlacement": "auto",
                         "barAlignment": 0,
                         "drawStyle": "line",
@@ -176,7 +63,85 @@
                             }
                         ]
                     },
-                    "unit": "s"
+                    "unit": "percent"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "pluginVersion": "8.0.0",
+            "targets": [
+                {
+                    "expr": "sum(kube_pod_status_phase{namespace='default',phase='Running'}) / count(kube_pod_info{namespace='default'}) * 100",
+                    "refId": "A"
+                }
+            ],
+            "title": "Deployment Pod Health",
+            "type": "timeseries"
+        },
+        {
+            "datasource": "Prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Replicas",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "tooltip": false,
+                            "viz": false,
+                            "legend": false
+                        },
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 2,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": true,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
                 },
                 "overrides": []
             },
@@ -190,8 +155,7 @@
             "options": {
                 "legend": {
                     "calcs": [
-                        "mean",
-                        "max"
+                        "last"
                     ],
                     "displayMode": "table",
                     "placement": "right"
@@ -203,12 +167,109 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "rate(jenkins_builds_duration_milliseconds_summary_sum[5m]) / rate(jenkins_builds_duration_milliseconds_summary_count[5m]) / 1000",
-                    "legendFormat": "{{job}}",
+                    "expr": "kube_deployment_status_replicas{namespace='default',deployment='shopflow'}",
+                    "legendFormat": "Desired",
+                    "refId": "A"
+                },
+                {
+                    "expr": "kube_deployment_status_replicas_ready{namespace='default',deployment='shopflow'}",
+                    "legendFormat": "Ready",
+                    "refId": "B"
+                },
+                {
+                    "expr": "kube_deployment_status_replicas_updated{namespace='default',deployment='shopflow'}",
+                    "legendFormat": "Updated",
+                    "refId": "C"
+                }
+            ],
+            "title": "Deployment Replica Status",
+            "type": "timeseries"
+        },
+        {
+            "datasource": "Prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Restarts",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "tooltip": false,
+                            "viz": false,
+                            "legend": false
+                        },
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 2,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": true,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "red",
+                                "value": 5
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 8
+            },
+            "id": 4,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "sum"
+                    ],
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "pluginVersion": "8.0.0",
+            "targets": [
+                {
+                    "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace='default',pod=~'shopflow.*'})",
+                    "legendFormat": "{{pod}}",
                     "refId": "A"
                 }
             ],
-            "title": "Pipeline Execution Time",
+            "title": "Pod Restarts",
             "type": "timeseries"
         },
         {
@@ -236,9 +297,9 @@
                 "h": 4,
                 "w": 6,
                 "x": 0,
-                "y": 8
+                "y": 16
             },
-            "id": 4,
+            "id": 5,
             "options": {
                 "colorMode": "background",
                 "graphMode": "none",
@@ -257,11 +318,68 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum(increase(jenkins_builds_success_build_count[24h]))",
+                    "expr": "count(kube_deployment_info{namespace='default'})",
                     "refId": "A"
                 }
             ],
-            "title": "Successful Deployments (24h)",
+            "title": "Total Deployments",
+            "type": "stat"
+        },
+        {
+            "datasource": "Prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 2
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 16
+            },
+            "id": 6,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": ""
+                },
+                "text": {},
+                "textMode": "auto"
+            },
+            "pluginVersion": "8.0.0",
+            "targets": [
+                {
+                    "expr": "kube_deployment_status_replicas_ready{namespace='default',deployment='shopflow'}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Ready Replicas",
             "type": "stat"
         },
         {
@@ -285,7 +403,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 5
+                                "value": 3
                             }
                         ]
                     },
@@ -296,122 +414,8 @@
             "gridPos": {
                 "h": 4,
                 "w": 6,
-                "x": 6,
-                "y": 8
-            },
-            "id": 5,
-            "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "values": false,
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": ""
-                },
-                "text": {},
-                "textMode": "auto"
-            },
-            "pluginVersion": "8.0.0",
-            "targets": [
-                {
-                    "expr": "sum(increase(jenkins_builds_failed_build_count[24h]))",
-                    "refId": "A"
-                }
-            ],
-            "title": "Failed Deployments (24h)",
-            "type": "stat"
-        },
-        {
-            "datasource": "Prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "percentage",
-                        "steps": [
-                            {
-                                "color": "red",
-                                "value": null
-                            },
-                            {
-                                "color": "yellow",
-                                "value": 80
-                            },
-                            {
-                                "color": "green",
-                                "value": 95
-                            }
-                        ]
-                    },
-                    "unit": "percent"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 4,
-                "w": 6,
                 "x": 12,
-                "y": 8
-            },
-            "id": 6,
-            "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "auto",
-                "orientation": "auto",
-                "reduceOptions": {
-                    "values": false,
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": ""
-                },
-                "text": {},
-                "textMode": "auto"
-            },
-            "pluginVersion": "8.0.0",
-            "targets": [
-                {
-                    "expr": "sum(increase(jenkins_builds_success_build_count[24h])) / (sum(increase(jenkins_builds_success_build_count[24h])) + sum(increase(jenkins_builds_failed_build_count[24h]))) * 100",
-                    "refId": "A"
-                }
-            ],
-            "title": "Build Success Rate (24h)",
-            "type": "stat"
-        },
-        {
-            "datasource": "Prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "unit": "s"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 4,
-                "w": 6,
-                "x": 18,
-                "y": 8
+                "y": 16
             },
             "id": 7,
             "options": {
@@ -432,31 +436,85 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "avg(rate(jenkins_builds_duration_milliseconds_summary_sum[24h]) / rate(jenkins_builds_duration_milliseconds_summary_count[24h]) / 1000)",
+                    "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace='default',pod=~'shopflow.*'}[24h]))",
                     "refId": "A"
                 }
             ],
-            "title": "Avg Build Duration",
+            "title": "Total Restarts (24h)",
+            "type": "stat"
+        },
+        {
+            "datasource": "Prometheus",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 16
+            },
+            "id": 8,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "values": false,
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": ""
+                },
+                "text": {},
+                "textMode": "auto"
+            },
+            "pluginVersion": "8.0.0",
+            "targets": [
+                {
+                    "expr": "sum(kube_pod_status_phase{namespace='default',pod=~'shopflow.*',phase='Running'})",
+                    "refId": "A"
+                }
+            ],
+            "title": "Running Pods",
             "type": "stat"
         }
     ],
-    "refresh": "1m",
+    "refresh": "30s",
     "schemaVersion": 27,
     "style": "dark",
     "tags": [
-        "jenkins",
-        "ci-cd"
+        "ci",
+        "cd",
+        "jenkins"
     ],
     "templating": {
         "list": []
     },
     "time": {
-        "from": "now-24h",
+        "from": "now-6h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
-    "title": "Jenkins CI/CD Pipeline",
-    "uid": "jenkins-cicd",
+    "title": "Deployment Pipeline Health",
+    "uid": "jenkins-ci-cd",
     "version": 0
 }

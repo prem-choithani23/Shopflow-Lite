@@ -26,7 +26,7 @@
                         "mode": "palette-classic"
                     },
                     "custom": {
-                        "axisLabel": "Requests/sec",
+                        "axisLabel": "CPU (cores)",
                         "axisPlacement": "auto",
                         "barAlignment": 0,
                         "drawStyle": "line",
@@ -63,7 +63,7 @@
                             }
                         ]
                     },
-                    "unit": "reqps"
+                    "unit": "short"
                 },
                 "overrides": []
             },
@@ -90,9 +90,14 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "rate(http_requests_total[1m])",
-                    "legendFormat": "{{method}} {{path}}",
+                    "expr": "sum(rate(http_requests_total[1m]))",
+                    "legendFormat": "Total Requests",
                     "refId": "A"
+                },
+                {
+                    "expr": "sum(rate(http_requests_total{status=~\"5..\"}[1m]))",
+                    "legendFormat": "5xx Errors",
+                    "refId": "B"
                 }
             ],
             "title": "HTTP Request Rate",
@@ -143,15 +148,15 @@
                             },
                             {
                                 "color": "yellow",
-                                "value": 500
+                                "value": 256
                             },
                             {
                                 "color": "red",
-                                "value": 1000
+                                "value": 512
                             }
                         ]
                     },
-                    "unit": "ms"
+                    "unit": "short"
                 },
                 "overrides": []
             },
@@ -179,12 +184,17 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
-                    "legendFormat": "p95 {{method}} {{path}}",
+                    "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+                    "legendFormat": "p95 Response Time",
                     "refId": "A"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+                    "legendFormat": "p50 Response Time",
+                    "refId": "B"
                 }
             ],
-            "title": "Response Time (p95)",
+            "title": "Response Time (p95/p50)",
             "type": "timeseries"
         },
         {
@@ -195,7 +205,7 @@
                         "mode": "palette-classic"
                     },
                     "custom": {
-                        "axisLabel": "Errors/sec",
+                        "axisLabel": "Network (MB/s)",
                         "axisPlacement": "auto",
                         "barAlignment": 0,
                         "drawStyle": "line",
@@ -232,7 +242,7 @@
                             },
                             {
                                 "color": "red",
-                                "value": 10
+                                "value": 100
                             }
                         ]
                     },
@@ -262,12 +272,17 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "rate(http_requests_total{status=~\"5..\"}[1m])",
-                    "legendFormat": "{{method}} {{path}} - {{status}}",
+                    "expr": "sum by (pod) (rate(container_network_transmit_bytes_total{pod=~\"shopflow.*\"}[1m])) / 1024 / 1024",
+                    "legendFormat": "TX {{pod}}",
                     "refId": "A"
+                },
+                {
+                    "expr": "sum by (pod) (rate(container_network_receive_bytes_total{pod=~\"shopflow.*\"}[1m])) / 1024 / 1024",
+                    "legendFormat": "RX {{pod}}",
+                    "refId": "B"
                 }
             ],
-            "title": "Error Rate (5xx)",
+            "title": "Network I/O",
             "type": "timeseries"
         },
         {
@@ -316,11 +331,11 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum(rate(http_requests_total[5m]))",
+                    "expr": "count(kube_pod_labels{label_app='shopflow'})",
                     "refId": "A"
                 }
             ],
-            "title": "Total Requests/sec",
+            "title": "Running Replicas",
             "type": "stat"
         },
         {
@@ -332,7 +347,7 @@
                     },
                     "mappings": [],
                     "thresholds": {
-                        "mode": "absolute",
+                        "mode": "percentage",
                         "steps": [
                             {
                                 "color": "red",
@@ -340,15 +355,15 @@
                             },
                             {
                                 "color": "yellow",
-                                "value": 1
+                                "value": 50
                             },
                             {
                                 "color": "green",
-                                "value": 5
+                                "value": 90
                             }
                         ]
                     },
-                    "unit": "short"
+                    "unit": "percent"
                 },
                 "overrides": []
             },
@@ -377,11 +392,11 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "count(kube_pod_labels{label_app='shopflow'})",
+                    "expr": "sum(kube_pod_status_phase{pod=~\"shopflow.*\",phase=\"Running\"}) / count(kube_pod_labels{label_app='shopflow'}) * 100",
                     "refId": "A"
                 }
             ],
-            "title": "Shopflow Replicas",
+            "title": "Pod Ready %",
             "type": "stat"
         },
         {
@@ -393,7 +408,7 @@
                     },
                     "mappings": [],
                     "thresholds": {
-                        "mode": "percentage",
+                        "mode": "absolute",
                         "steps": [
                             {
                                 "color": "green",
@@ -401,15 +416,15 @@
                             },
                             {
                                 "color": "yellow",
-                                "value": 70
+                                "value": 1
                             },
                             {
                                 "color": "red",
-                                "value": 90
+                                "value": 5
                             }
                         ]
                     },
-                    "unit": "percent"
+                    "unit": "short"
                 },
                 "overrides": []
             },
@@ -438,11 +453,11 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+                    "expr": "sum(increase(kube_pod_container_status_restarts_total{pod=~\"shopflow.*\"}[1h]))",
                     "refId": "A"
                 }
             ],
-            "title": "Error Rate %",
+            "title": "Restarts (1h)",
             "type": "stat"
         },
         {
@@ -462,7 +477,7 @@
                             }
                         ]
                     },
-                    "unit": "ms"
+                    "unit": "short"
                 },
                 "overrides": []
             },
@@ -491,11 +506,11 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+                    "expr": "max(container_memory_usage_bytes{pod=~\"shopflow.*\"}) / 1024 / 1024",
                     "refId": "A"
                 }
             ],
-            "title": "Avg Response Time (ms)",
+            "title": "Peak Memory (MB)",
             "type": "stat"
         }
     ],

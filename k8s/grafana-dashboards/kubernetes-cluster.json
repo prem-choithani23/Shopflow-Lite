@@ -90,7 +90,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{container!=\"\",pod!=\"\"}[5m]))",
+                    "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{pod!=\"\"}[5m]))",
                     "refId": "A"
                 }
             ],
@@ -169,7 +169,7 @@
             "pluginVersion": "8.0.0",
             "targets": [
                 {
-                    "expr": "sum by (pod) (container_memory_usage_bytes{container!=\"\",pod!=\"\"}) / 1024 / 1024",
+                    "expr": "sum by (pod) (container_memory_usage_bytes{pod!=\"\"}) / 1024 / 1024",
                     "refId": "A"
                 }
             ],
